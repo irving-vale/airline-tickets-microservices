@@ -1,0 +1,47 @@
+  services:
+    # Database for msvc-users
+    db-users:
+      image: postgres:15.2
+      container_name: msvc_users_db
+      restart: always
+      environment:
+        POSTGRES_DB: db_users
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_USER}
+      ports:
+        - "5431:5432"
+      volumes:
+        - postgres_users_data:/var/lib/postgresql/data
+
+    # Database for msvc-flights
+    db-flights:
+      image: postgres:15.2
+      container_name: msvc_flights_db
+      restart: always
+      environment:
+        POSTGRES_DB: db_flights
+        POSTGRES_USER: ${POSTGRES_db_flights}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_flights}
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres_flights_data:/var/lib/postgresql/data
+
+    # Database for msvc-tours
+    db-tours:
+      image: postgres:15.2
+      container_name: msvc_tours_db
+      restart: always
+      environment:
+        POSTGRES_DB: db_tours
+        POSTGRES_USER: ${POSTGRES_db_tours}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_tours}
+      ports:
+        - "5433:5432"
+      volumes:
+        - postgres_tours_data:/var/lib/postgresql/data
+
+  volumes:
+    postgres_users_data:
+    postgres_flights_data:
+    postgres_tours_data:

@@ -26,6 +26,7 @@
         <module>mvc-users</module>
         <module>msvc-tours</module>
         <module>msvc-flights</module>
+        <module>msvc-gateway</module>
     </modules>
 
 </project>
