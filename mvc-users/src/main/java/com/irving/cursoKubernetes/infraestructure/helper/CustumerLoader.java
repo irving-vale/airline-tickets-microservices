@@ -1,5 +1,6 @@
 package com.irving.cursoKubernetes.infraestructure.helper;
 
+import com.irving.cursoKubernetes.api.models.responses.CustomerResponseDto;
 import com.irving.cursoKubernetes.domain.entities.CustomerEntity;
 import com.irving.cursoKubernetes.domain.repositories.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;

@@ -21,6 +21,8 @@ CREATE TABLE ticket
     departure_date timestamp NOT NULL,
     arrival_date   timestamp NOT NULL,
     purchase_date  timestamp NOT NULL,
+    customer_id    varchar(20) NOT NULL,
+    tour_id        bigint,
     CONSTRAINT pk_ticket PRIMARY KEY ( "id" ),
     CONSTRAINT fk_fly_t FOREIGN KEY ( fly_id ) REFERENCES fly ( "id" ) ON DELETE NO ACTION
 );
