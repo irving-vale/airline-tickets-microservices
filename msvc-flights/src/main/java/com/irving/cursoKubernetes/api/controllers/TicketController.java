@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/tickets")
+@RequestMapping("/tickets")
 @AllArgsConstructor
 public class TicketController {
 

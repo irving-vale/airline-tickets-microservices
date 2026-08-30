@@ -1,0 +1,14 @@
+# ==========================================
+# 1. DEFINICIÓN DE VARIABLES GLOBALES
+# ==========================================
+@hostname = localhost
+@port = 8083
+@host = http://{{hostname}}:{{port}}
+@page = 1
+@size = 100
+@id = VIKI771012HMCRG093
+
+
+
+### Petición GET Id ###
+GET {{host}}/api/v1/customer/{{id}}

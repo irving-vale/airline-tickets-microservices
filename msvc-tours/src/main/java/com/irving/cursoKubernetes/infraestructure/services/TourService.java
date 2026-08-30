@@ -38,12 +38,15 @@ public class TourService implements ITourService {
 
     @Override
     public ApiResponseDto<TourResponseDto> create(TourRequestDto request) {
-        ApiResponseDto<CustomerResponseDto> customerResponse = this.customerClient.getCustomerById(request.getIdClient());
-        if (customerResponse.getStatusCode() != 200) {
-            throw new RuntimeException("Error al obtener el cliente");
+       // 1. Get the Customer from Microservices msvc-users
+        var customerResponse = this.customerClient.getCustomerById(request.getIdClient());
+        if (customerResponse == null || customerResponse.getData() == null) {
+            throw new EntityNotFoundException("Customer not found with ID: " + request.getIdClient());
         }
-        CustomerResponseDto customerFindByIdDto = customerResponse.getData();
+        var customerFindByIdDto = customerResponse.getData();
+
 //        var customerFindById = entityLoader.findCustumerEntityById(request.getIdClient());
+
         var flightsFIndById = new HashSet<FlyEntity>();
         request.getIdFlys().forEach(flyRequest -> flightsFIndById.add(this.entityLoader.findFlyEntityById(flyRequest.getIdFly())));
 

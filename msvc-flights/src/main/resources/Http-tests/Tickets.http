@@ -1,0 +1,21 @@
+# ==========================================
+# 1. DEFINICIÓN DE VARIABLES GLOBALES
+# ==========================================
+@hostname = localhost
+@port = 8081
+@host = http://{{hostname}}:{{port}}
+@page = 1
+@size = 100
+
+
+
+### Petición Post CRear ticket ###
+POST {{host}}/api/v1/tickets/create
+Content-Type: application/json
+
+{
+    "idClient": "VIKI771012HMCRG093",
+    "idFly": 1
+}
+### Acuator ###
+GET http://localhost:8081/api/v1/actuator/health

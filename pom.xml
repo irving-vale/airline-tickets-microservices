@@ -23,10 +23,11 @@
     </properties>
 
     <modules>
-        <module>mvc-users</module>
+        <module>msvc-users</module>
         <module>msvc-tours</module>
         <module>msvc-flights</module>
         <module>msvc-gateway</module>
+        <module>msvc-eureka-server</module>
     </modules>
 
 </project>

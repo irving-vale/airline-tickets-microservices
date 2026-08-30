@@ -11,6 +11,7 @@ import com.irving.cursoKubernetes.domain.mappers.FlyMapper;
 import com.irving.cursoKubernetes.domain.repositories.FlyRepository;
 import com.irving.cursoKubernetes.infraestructure.abstract_services.IFlyService;
 import com.irving.cursoKubernetes.utils.SortType;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.parser.Entity;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,10 +37,10 @@ public class FlyService implements IFlyService {
     private final FlyMapper flyMapper;
 
     @Override
-    public ApiResponseDto<List<FlyResponseDto>> findAllPagination(PageableRequestDto pageableRequestDto) {
-        Sort sortValue = sort(pageableRequestDto.getSortType());
+    public ApiResponseDto<List<FlyResponseDto>> findAllPagination(Integer page, Integer size, SortType sortType) {
+        Sort sortValue = sort(sortType);
 
-        Pageable pageable = PageRequest.of(pageableRequestDto.getPage() - 1, pageableRequestDto.getSize(), sortValue);
+        Pageable pageable = PageRequest.of(page - 1, size, sortValue);
 
         Page<FlyResponseDto> flyToDto = flyRepository.findAllJoinFetch(pageable).map(flyMapper::toDto);
         return ApiResponseDto.<List<FlyResponseDto>>builder()
@@ -48,7 +51,7 @@ public class FlyService implements IFlyService {
                 .meta(Meta.builder()
                         .totalItems(flyToDto.getTotalElements())
                         .totalPages(flyToDto.getTotalPages())
-                        .currentPage(pageableRequestDto.getPage())
+                        .currentPage(page)
                         .pageSize(flyToDto.getSize())
                         .build())
                 .build();
@@ -57,36 +60,36 @@ public class FlyService implements IFlyService {
     }
 
     @Override
-    public ApiResponseDto<List<FlyResponseDto>> readLessPrice(FlyLessPriceRequestDto lessPrice) {
-        Sort sortValue = sort(lessPrice.getSortType());
-        Pageable pageable = PageRequest.of(lessPrice.getPage() - 1, lessPrice.getSize(), sortValue);
+    public ApiResponseDto<List<FlyResponseDto>> readLessPrice(Integer page, Integer size, SortType sortType, BigDecimal price) {
+        Sort sortValue = sort(sortType);
+        Pageable pageable = PageRequest.of(page - 1, size, sortValue);
 
-        Page<FlyResponseDto> flyToDto = flyRepository.findByPriceLessThanEqual(pageable, lessPrice.getPrice()).map(flyMapper::toDto);
+        Page<FlyResponseDto> flyToDto = flyRepository.findByPriceLessThanEqual(pageable, price).map(flyMapper::toDto);
         return ApiResponseDto.<List<FlyResponseDto>>builder()
                 .status("success")
-                .message(flyToDto.isEmpty() ? STR."No Flys found with price less than or equal to \{lessPrice.getPrice()}"
-                        : STR."Flys retrieved successfully with price less than or equal to \{lessPrice.getPrice()}")
+                .message(flyToDto.isEmpty() ? STR."No Flys found with price less than or equal to \{price}"
+                        : STR."Flys retrieved successfully with price less than or equal to \{price}")
                 .data(flyToDto.getContent())
                 .statusCode(200)
                 .meta(Meta.builder()
                         .totalItems(0L)
                         .totalPages(0)
-                        .currentPage(lessPrice.getPage() - 1)
-                        .pageSize(lessPrice.getSize())
+                        .currentPage(page - 1)
+                        .pageSize(size)
                         .build())
                 .build();
     }
 
     @Override
-    public ApiResponseDto<List<FlyResponseDto>> readBetweenPrice(PriceRangeRequestDto priceRange) {
+    public ApiResponseDto<List<FlyResponseDto>> readBetweenPrice(BigDecimal min, BigDecimal max) {
 
-        List<FlyResponseDto> flyToDto = flyRepository.findByPriceBetween(priceRange.getMin(), priceRange.getMax()).stream()
+        List<FlyResponseDto> flyToDto = flyRepository.findByPriceBetween(min, max).stream()
                 .map(flyMapper::toDto)
                 .toList();
         return ApiResponseDto.<List<FlyResponseDto>>builder()
                 .status("success")
-                .message(flyToDto.isEmpty() ? STR."No Flys found between prices \{priceRange.getMin()} and \{priceRange.getMax()}"
-                        : STR."Flys retrieved successfully between prices \{priceRange.getMin()} and \{priceRange.getMax()}")
+                .message(flyToDto.isEmpty() ? STR."No Flys found between prices \{min} and \{max}"
+                        : STR."Flys retrieved successfully between prices \{min} and \{max}")
                 .data(flyToDto)
                 .statusCode(200)
                 .meta(Meta.builder()
@@ -100,23 +103,43 @@ public class FlyService implements IFlyService {
 
 
     @Override
-    public ApiResponseDto<Set<FlyResponseDto>> readByOriginDestiny(FlySearchOriginDestinyDto flySearchOriginDestinyDto) {
+    public ApiResponseDto<Set<FlyResponseDto>> readByOriginDestiny(String origin, String destiny) {
 
-        var flyToDto = flyRepository.findByOriginNameAndDestinyName(flySearchOriginDestinyDto.getOrigin(),flySearchOriginDestinyDto.getDestiny())
+        var flyToDto = flyRepository
+                .findByOriginNameAndDestinyName(origin,destiny)
                 .stream().map(flyMapper::toDto)
                 .collect(Collectors.toSet());
+        boolean isEmpty = flyToDto.isEmpty();
+        int totalItems = flyToDto.size();
+
         return ApiResponseDto.<Set<FlyResponseDto>>builder()
                 .status("success")
-                .message(flyToDto.isEmpty()? "No fly found between origin destiny"
+                .message(flyToDto.isEmpty()
+                        ? "No fly found between origin destiny"
                         : "Fly found between origin and destiny")
                 .data(flyToDto)
                 .statusCode(200)
                 .meta(Meta.builder()
-                        .totalItems((long)flyToDto.size())
-                        .totalPages(1)
-                        .currentPage(1)
-                        .pageSize(1)
+                        .totalItems((long) totalItems)
+                        .totalPages(isEmpty ? 0 : 1)
+                        .currentPage(isEmpty ? 0 : 1)
+                        .pageSize(totalItems)
                         .build())
+                .build();
+
+    }
+
+    @Override
+    public ApiResponseDto<FlyResponseDto> readById(Long id) {
+        var flyToDto = flyRepository.findById(id).map(flyMapper::toDto)
+                .orElseThrow(()-> new EntityNotFoundException(STR."Fly not found with id: \{id}"));
+
+        return ApiResponseDto.<FlyResponseDto>builder()
+                .status("success")
+                .message("Fly found successfully")
+                .data(flyToDto)
+                .statusCode(200)
+                .meta(null)
                 .build();
 
     }

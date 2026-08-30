@@ -1,0 +1,29 @@
+
+spring:
+  application:
+    name: msvc-eureka-server
+server:
+  port: 8761
+
+  Eureka:
+    client:
+      registerWithEureka: false
+      fetchRegistry: false
+      serviceUrl:
+        defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+    diskspace:
+      enabled: true
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true

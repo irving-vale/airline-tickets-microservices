@@ -1,7 +1,7 @@
 
 CREATE TABLE fly
 (
-    "id"           bigserial NOT NULL,
+    "id"         bigserial NOT NULL,
     origin_lat   decimal NOT NULL,
     origin_lng   decimal NOT NULL,
     destiny_lng  decimal NOT NULL,
