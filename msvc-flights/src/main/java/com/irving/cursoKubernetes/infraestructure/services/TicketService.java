@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
+import javax.naming.ServiceUnavailableException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class TicketService implements ITicketService {
 
 
     @Override
-    public ApiResponseDto<TicketResponseDto> create(TicketRequestDto request) {
+    public ApiResponseDto<TicketResponseDto> create(TicketRequestDto request) throws ServiceUnavailableException {
         var fly = flyRepository.findById(request.getIdFly()).orElseThrow(() -> new EntityNotFoundException("Fly not found"));
 //        var customer = customerRepository.findById(request.getIdClient()).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 
@@ -66,7 +67,7 @@ public class TicketService implements ITicketService {
     }
 
     @Override
-    public ApiResponseDto<TicketResponseDto> update(UUID uuid, TicketRequestDto request) {
+    public ApiResponseDto<TicketResponseDto> update(UUID uuid, TicketRequestDto request) throws ServiceUnavailableException {
         TicketEntity ticketEntity = ticketRepository.findById(uuid).orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
 
         var flyUpdate = flyRepository.findById(request.getIdFly()).orElseThrow(() -> new EntityNotFoundException("Fly not found"));
@@ -100,8 +101,12 @@ public class TicketService implements ITicketService {
     }
 
 
-    private @NonNull String getCustomerFindById(TicketRequestDto request) {
+    private @NonNull String getCustomerFindById(TicketRequestDto request) throws ServiceUnavailableException {
         var customer = this.customerClient.getCustomerById(request.getIdClient());
+        if (customer != null && "degraded".equals(customer.getStatus())) {
+            throw new ServiceUnavailableException(STR."Customer not found with ID: \{request.getIdClient()}");
+        }
+
         if (customer == null || customer.getData() == null || customer.getData().getDni() == null) {
             throw new EntityNotFoundException(STR."Customer not found with ID: \{request.getIdClient()}");
         }

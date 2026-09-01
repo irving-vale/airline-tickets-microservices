@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.ServiceUnavailableException;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TicketController {
 	private final TicketService ticketService;
 
 	@PostMapping("/create")
-	public ResponseEntity<ApiResponseDto<TicketResponseDto>> createTicket(@RequestBody TicketRequestDto request) {
+	public ResponseEntity<ApiResponseDto<TicketResponseDto>> createTicket(@RequestBody TicketRequestDto request) throws ServiceUnavailableException {
 		return ResponseEntity.ok(ticketService.create(request));
 	}
 
@@ -29,7 +30,7 @@ public class TicketController {
 	}
 
 	@PutMapping("/update/{uuid}")
-	public ResponseEntity<ApiResponseDto<TicketResponseDto>> updateTicket(@PathVariable UUID uuid,@RequestBody TicketRequestDto request) {
+	public ResponseEntity<ApiResponseDto<TicketResponseDto>> updateTicket(@PathVariable UUID uuid,@RequestBody TicketRequestDto request) throws ServiceUnavailableException {
 		return ResponseEntity.ok(ticketService.update(uuid, request));
 	}
 

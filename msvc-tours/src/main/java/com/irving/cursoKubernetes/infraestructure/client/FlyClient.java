@@ -7,5 +7,5 @@ import org.springframework.cloud.openfeign.FeignClient;
 @FeignClient(name = "msvc-flights", url = "http://localhost:8084")
 public interface FlyClient {
 
-    ApiResponseDto<FlyResponseDto>
+//    ApiResponseDto<FlyResponseDto>
 }
