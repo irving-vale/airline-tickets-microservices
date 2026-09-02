@@ -2,10 +2,11 @@
 # 1. DEFINICIÓN DE VARIABLES GLOBALES
 # ==========================================
 @hostname = localhost
-@port = 8081
+@port = 8080
 @host = http://{{hostname}}:{{port}}
 @page = 1
 @size = 100
+@uuid =31d97b3e-b061-4b78-ad6e-e8789157907a
 
 
 
@@ -19,3 +20,8 @@ Content-Type: application/json
 }
 ### Acuator ###
 GET http://localhost:8081/api/v1/actuator/health
+
+
+### 2. Petición GET Read ticket por UUID ###
+GET {{host}}/api/v1/tickets/{{uuid}}
+Content-Type: application/json

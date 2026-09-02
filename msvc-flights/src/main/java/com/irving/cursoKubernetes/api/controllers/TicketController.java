@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/api/v1/tickets")
 @AllArgsConstructor
 public class TicketController {
 
@@ -24,8 +24,8 @@ public class TicketController {
 		return ResponseEntity.ok(ticketService.create(request));
 	}
 
-	@GetMapping("/read")
-	public ResponseEntity<ApiResponseDto<TicketResponseDto>> readTicket(@RequestParam UUID uuid) {
+	@GetMapping("/{uuid}")
+	public ResponseEntity<ApiResponseDto<TicketResponseDto>> readTicket(@PathVariable("uuid") UUID uuid) {
 		return ResponseEntity.ok(ticketService.read(uuid));
 	}
 
