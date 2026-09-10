@@ -1,4 +1,16 @@
+  networks:
+    microservices-network:
+      driver: bridge
+
+  volumes:
+    postgres_users_data:
+    postgres_flights_data:
+    postgres_tours_data:
+
   services:
+    # ============================================================
+    # 🗄️ BASES DE DATOS
+    # ============================================================
     # Database for msvc-users
     db-users:
       image: postgres:15.2
@@ -41,7 +53,100 @@
       volumes:
         - postgres_tours_data:/var/lib/postgresql/data
 
-  volumes:
-    postgres_users_data:
-    postgres_flights_data:
-    postgres_tours_data:
+#  # ============================================================
+#  # 2. 🔍 ZIPKIN (Trazabilidad Distribuida) - NUEVO
+#  # ============================================================
+#    zipkin:
+#      image: openzipkin/zipkin:latest
+#      container_name: zipkin
+#      restart: always
+#      ports:
+#        - "9411:9411"
+#      depends_on:
+#        - db-users
+#        - db-flights
+#        - db-tours
+#      networks:
+#        - microservices-network
+
+  # ============================================================
+  # 🏷️ EUREKA SERVER
+  # ============================================================
+    msvc-eureka-server:
+      build:
+        context: .
+        dockerfile: msvc-eureka-server/Dockerfile
+      image: msvc-eureka-server:v1
+      container_name: msvc-eureka-server
+      restart: always
+      ports:
+      - "8761:8761"
+      environment:
+      - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
+#      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      networks:
+      - microservices-network
+
+    # ============================================================
+    # 🚗 API GATEWAY
+    # ============================================================
+    msvc-gateway:
+      build:
+        context: .
+        dockerfile: msvc-gateway/Dockerfile
+      image: msvc-gateway:v1
+      container_name: msvc-gateway
+      restart: always
+      ports:
+        - "8080:8080"
+      environment:
+        - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
+#        - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      depends_on:
+        - msvc-eureka-server
+      networks:
+        - microservices-network
+    # ============================================================
+    # ✈️ MSVC FLIGHTS
+    # ============================================================
+    msvc-flights:
+      build:
+        context: .
+        dockerfile: msvc-flights/Dockerfile
+      image: msvc-flights:v1
+      container_name: msvc-flights
+      restart: always
+      ports:
+        - "8081:8081"
+      environment:
+        - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://msvc_flights_db:5432/db_flights
+        - POSTGRES_db_flights=${POSTGRES_db_flights:-postgres}
+        - POSTGRES_PASSWORD_flights=${POSTGRES_PASSWORD_flights:-postgres}
+      depends_on:
+        - msvc-eureka-server
+        - db-flights
+      networks:
+        - microservices-network
+    # ============================================================
+    # 👤 MSVC USERS
+    # ============================================================
+    msvc-users:
+      build:
+        context: .
+        dockerfile: msvc-users/Dockerfile
+      image: msvc-users:v1
+      container_name: msvc-users
+      restart: always
+      ports:
+        - "8083:8083"
+      environment:
+        - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://msvc_users_db:5432/db_users
+        - POSTGRES_db_users=${POSTGRES_USER:-postgres}
+        - POSTGRES_PASSWORD_users=${POSTGRES_PASSWORD_USER:-postgres}
+      depends_on:
+        - msvc-eureka-server
+        - db-users
+      networks:
+        - microservices-network

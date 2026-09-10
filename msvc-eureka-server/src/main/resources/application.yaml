@@ -1,18 +1,38 @@
-
 spring:
   application:
     name: msvc-eureka-server
+
 server:
   port: 8761
 
-  Eureka:
-    client:
-      registerWithEureka: false
-      fetchRegistry: false
-      serviceUrl:
-        defaultZone: http://localhost:8761/eureka/
+# ============================================================
+# 🏷️ EUREKA SERVER
+# ============================================================
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
 
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+  server:
+    enable-self-preservation: false
+
+# ============================================================
+# 📊 MANAGEMENT & TRACING
+# ============================================================
 management:
+  tracing:
+    sampling:
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+
   endpoints:
     web:
       exposure:
@@ -27,3 +47,16 @@ management:
       enabled: true
     os:
       enabled: true
+
+# ============================================================
+# 📝 LOGGING
+# ============================================================
+logging:
+  level:
+    com.netflix.discovery: INFO
+    com.netflix.eureka: INFO
+    org.springframework.cloud.netflix.eureka: INFO
+    zipkin2.reporter: DEBUG
+
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:},%X{traceId:-},%X{spanId:-}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
