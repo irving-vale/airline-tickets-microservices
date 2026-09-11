@@ -104,11 +104,11 @@ public class TicketService implements ITicketService {
     private @NonNull String getCustomerFindById(TicketRequestDto request) throws ServiceUnavailableException {
         var customer = this.customerClient.getCustomerById(request.getIdClient());
         if (customer != null && "degraded".equals(customer.getStatus())) {
-            throw new ServiceUnavailableException(STR."Customer not found with ID: \{request.getIdClient()}");
+            throw new ServiceUnavailableException("Customer not found with ID");
         }
 
         if (customer == null || customer.getData() == null || customer.getData().getDni() == null) {
-            throw new EntityNotFoundException(STR."Customer not found with ID: \{request.getIdClient()}");
+            throw new EntityNotFoundException("Customer not found with ID");
         }
         var customerFindById = customer.getData().getDni();
         return customerFindById;

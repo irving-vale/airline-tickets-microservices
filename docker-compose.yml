@@ -24,6 +24,8 @@
         - "5431:5432"
       volumes:
         - postgres_users_data:/var/lib/postgresql/data
+      networks:
+        - microservices-network
 
     # Database for msvc-flights
     db-flights:
@@ -38,6 +40,8 @@
         - "5432:5432"
       volumes:
         - postgres_flights_data:/var/lib/postgresql/data
+      networks:
+        - microservices-network
 
     # Database for msvc-tours
     db-tours:
@@ -52,6 +56,8 @@
         - "5433:5432"
       volumes:
         - postgres_tours_data:/var/lib/postgresql/data
+      networks:
+        - microservices-network
 
 #  # ============================================================
 #  # 2. 🔍 ZIPKIN (Trazabilidad Distribuida) - NUEVO
@@ -119,10 +125,11 @@
       ports:
         - "8081:8081"
       environment:
+        - SPRING_PROFILES_ACTIVE=prod
         - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
-        - SPRING_DATASOURCE_URL=jdbc:postgresql://msvc_flights_db:5432/db_flights
-        - POSTGRES_db_flights=${POSTGRES_db_flights:-postgres}
-        - POSTGRES_PASSWORD_flights=${POSTGRES_PASSWORD_flights:-postgres}
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db-flights:5432/db_flights
+        - SPRING_DATASOURCE_USERNAME=${POSTGRES_db_flights:-postgres}
+        - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD_flights:-postgres}
       depends_on:
         - msvc-eureka-server
         - db-flights
@@ -142,9 +149,9 @@
         - "8083:8083"
       environment:
         - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
-        - SPRING_DATASOURCE_URL=jdbc:postgresql://msvc_users_db:5432/db_users
-        - POSTGRES_db_users=${POSTGRES_USER:-postgres}
-        - POSTGRES_PASSWORD_users=${POSTGRES_PASSWORD_USER:-postgres}
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db-users:5432/db_users
+        - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+        - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD_USER:-postgres}
       depends_on:
         - msvc-eureka-server
         - db-users

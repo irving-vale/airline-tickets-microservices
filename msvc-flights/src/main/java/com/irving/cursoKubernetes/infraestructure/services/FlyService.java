@@ -67,8 +67,8 @@ public class FlyService implements IFlyService {
         Page<FlyResponseDto> flyToDto = flyRepository.findByPriceLessThanEqual(pageable, price).map(flyMapper::toDto);
         return ApiResponseDto.<List<FlyResponseDto>>builder()
                 .status("success")
-                .message(flyToDto.isEmpty() ? STR."No Flys found with price less than or equal to \{price}"
-                        : STR."Flys retrieved successfully with price less than or equal to \{price}")
+                .message(flyToDto.isEmpty() ? "No Fly's found with price "
+                        : "Fly's retrieved successfully with price ")
                 .data(flyToDto.getContent())
                 .statusCode(200)
                 .meta(Meta.builder()
@@ -88,8 +88,8 @@ public class FlyService implements IFlyService {
                 .toList();
         return ApiResponseDto.<List<FlyResponseDto>>builder()
                 .status("success")
-                .message(flyToDto.isEmpty() ? STR."No Flys found between prices \{min} and \{max}"
-                        : STR."Flys retrieved successfully between prices \{min} and \{max}")
+                .message(flyToDto.isEmpty() ?"No Flys found between prices "
+                        : "Flys retrieved successfully between prices ")
                 .data(flyToDto)
                 .statusCode(200)
                 .meta(Meta.builder()
@@ -132,7 +132,7 @@ public class FlyService implements IFlyService {
     @Override
     public ApiResponseDto<FlyResponseDto> readById(Long id) {
         var flyToDto = flyRepository.findById(id).map(flyMapper::toDto)
-                .orElseThrow(()-> new EntityNotFoundException(STR."Fly not found with id: \{id}"));
+                .orElseThrow(()-> new EntityNotFoundException("Fly not found"));
 
         return ApiResponseDto.<FlyResponseDto>builder()
                 .status("success")

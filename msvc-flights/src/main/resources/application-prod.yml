@@ -1,0 +1,120 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: msvc-flights
+
+  # Propagación de contexto para Tracing / Micrometer
+  reactor:
+    context-propagation: auto
+
+  # Base de Datos y JPA
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # Configuración de Flyway
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    out-of-order: true
+    clean-disabled: true
+    validate-on-migrate: true
+
+  # Docker Compose
+  docker:
+    compose:
+      enabled: false
+
+  # Spring Cloud & Feign Circuit Breaker
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+
+# ============================================================
+# 📊 MANAGEMENT & TRACING (Unificado y Corregido)
+# ============================================================
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      diskspace:
+        enabled: true
+  info:
+    os:
+      enabled: true
+
+# ============================================================
+# 🟢 RESILIENCE4J
+# ============================================================
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 6
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000ms
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+  timelimiter:
+    instances:
+      default:
+        timeout-duration: 3s
+  retry:
+    instances:
+      default:
+        max-attempts: 3
+        wait-duration: 1000ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - feign.FeignException
+
+# ============================================================
+# 🏷️ EUREKA
+# ============================================================
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# ============================================================
+# 📝 LOGGING
+# ============================================================
+logging:
+  level:
+    zipkin2.reporter: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:},%X{traceId:-},%X{spanId:-}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
