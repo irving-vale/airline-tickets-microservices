@@ -106,6 +106,7 @@
       ports:
         - "8080:8080"
       environment:
+        - SPRING_PROFILES_ACTIVE=prod
         - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
 #        - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       depends_on:
@@ -148,6 +149,7 @@
       ports:
         - "8083:8083"
       environment:
+        - SPRING_PROFILES_ACTIVE=prod
         - EUREKA_URL=http://msvc-eureka-server:8761/eureka/
         - SPRING_DATASOURCE_URL=jdbc:postgresql://db-users:5432/db_users
         - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}

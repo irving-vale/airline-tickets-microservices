@@ -1,9 +1,9 @@
 server:
-  port: 8081
+  port: 8083
 
 spring:
   application:
-    name: msvc-flights
+    name: msvc-users
 
   # Base de Datos y JPA (Se inyecta por variables/perfiles)
   jpa:
@@ -29,15 +29,6 @@ spring:
     compose:
       enabled: false
 
-  # Spring Cloud & Feign Circuit Breaker
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
-    circuitbreaker:
-      resilience4j:
-        enabled: true
-
 # ============================================================
 # 📊 ACTUATOR & HEALTH (Requerido para Kubernetes/Docker)
 # ============================================================
@@ -58,34 +49,6 @@ management:
       enabled: true
 
 # ============================================================
-# 🟢 RESILIENCE4J
-# ============================================================
-resilience4j:
-  circuitbreaker:
-    instances:
-      default:
-        sliding-window-type: COUNT_BASED
-        sliding-window-size: 6
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10000ms
-        permitted-number-of-calls-in-half-open-state: 2
-        automatic-transition-from-open-to-half-open-enabled: true
-  timelimiter:
-    instances:
-      default:
-        timeout-duration: 3s
-  retry:
-    instances:
-      default:
-        max-attempts: 3
-        wait-duration: 1000ms
-        enable-exponential-backoff: true
-        exponential-backoff-multiplier: 2
-        retry-exceptions:
-          - java.io.IOException
-          - feign.FeignException
-
-# ============================================================
 # 🏷️ EUREKA CLIENT
 # ============================================================
 eureka:
@@ -97,7 +60,7 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 # ============================================================
-# 📝 LOGGING (Sin rastros de Zipkin)
+# 📝 LOGGING (Sin rastros de Zipkin ni trazas vacías)
 # ============================================================
 logging:
   level:

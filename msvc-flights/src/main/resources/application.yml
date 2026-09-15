@@ -7,11 +7,7 @@ spring:
   profiles:
     active: dev
 
-  # Propagación de contexto para Tracing / Micrometer
-  reactor:
-    context-propagation: auto
-
-  # Base de Datos y JPA
+  # Base de Datos y JPA (Se inyecta por variables/perfiles)
   jpa:
     show-sql: true
     hibernate:
@@ -30,7 +26,7 @@ spring:
     clean-disabled: true
     validate-on-migrate: true
 
-  # Docker Compose
+  # Desactiva la auto-gestión de Docker Compose desde Spring Boot
   docker:
     compose:
       enabled: false
@@ -45,20 +41,13 @@ spring:
         enabled: true
 
 # ============================================================
-# 📊 MANAGEMENT & TRACING (Unificado y Corregido)
+# 📊 ACTUATOR & HEALTH (Requerido para Kubernetes/Docker)
 # ============================================================
 management:
-  tracing:
-    enabled: true
-    sampling:
-      probability: ${SAMPLING_PROBABILITY:1.0}
-  zipkin:
-    tracing:
-      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: 'health,info,prometheus,metrics'
   endpoint:
     health:
       show-details: always
@@ -99,7 +88,7 @@ resilience4j:
           - feign.FeignException
 
 # ============================================================
-# 🏷️ EUREKA
+# 🏷️ EUREKA CLIENT
 # ============================================================
 eureka:
   client:
@@ -110,13 +99,12 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 # ============================================================
-# 📝 LOGGING
+# 📝 LOGGING (Sin rastros de Zipkin)
 # ============================================================
 logging:
   level:
-    zipkin2.reporter: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
 
   pattern:
-    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:},%X{traceId:-},%X{spanId:-}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"

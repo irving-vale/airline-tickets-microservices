@@ -1,0 +1,74 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: msvc-gateway
+
+  microprofile:
+    config:
+      enabled: true
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: msvc-flights-route
+          uri: lb://MSVC-FLIGHTS
+          predicates:
+            - Path=/api/v1/flights/**, /api/v1/tickets/**
+
+        - id: msvc-users-route
+          uri: lb://MSVC-USERS
+          predicates:
+            - Path=/api/v1/users/**, /api/v1/customers/**
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+# ============================================================
+# 📊 ACTUATOR & HEALTH (Requerido para Kubernetes/Docker)
+# ============================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,prometheus,metrics,gateway'
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  info:
+    os:
+      enabled: true
+
+# ============================================================
+# 🏷️ EUREKA CLIENT
+# ============================================================
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# ============================================================
+# 📝 LOGGING (Sin rastros de Zipkin ni trazas vacías)
+# ============================================================
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
